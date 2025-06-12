@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export default function EditStudent() {
-  const [id, setId] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -14,28 +14,33 @@ export default function EditStudent() {
   const [message, setMessage] = useState('');
   const [loaded, setLoaded] = useState(false);
 
-  const handleIdSearch = async () => {
+  const handleRegSearch = async () => {
     setMessage('');
     setLoaded(false);
-    if (!id) {
-      setMessage('Please enter a student ID.');
+    if (!registrationNumber) {
+      setMessage('Please enter a registration number.');
       return;
     }
     try {
-      const res = await fetch(`http://localhost:3000/students/${id}`);
+      const res = await fetch(`http://localhost:3000/students?registrationNumber=${registrationNumber}`);
       if (!res.ok) {
         setMessage('Student not found.');
         return;
       }
       const data = await res.json();
+      if (!data || data.length === 0) {
+        setMessage('Student not found.');
+        return;
+      }
+      const student = data[0];
       setForm({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        age: data.age,
-        registrationNumber: data.registrationNumber,
-        course: data.course,
-        courseGrade: data.courseGrade,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        email: student.email,
+        age: student.age,
+        registrationNumber: student.registrationNumber,
+        course: student.course,
+        courseGrade: student.courseGrade,
       });
       setLoaded(true);
     } catch {
@@ -51,7 +56,16 @@ export default function EditStudent() {
     e.preventDefault();
     setMessage('');
     try {
-      const res = await fetch(`http://localhost:3000/students/${id}`, {
+      // Find the student by registration number to get the id
+      const resFind = await fetch(`http://localhost:3000/students?registrationNumber=${registrationNumber}`);
+      const dataFind = await resFind.json();
+      if (!dataFind || dataFind.length === 0) {
+        setMessage('Student not found.');
+        return;
+      }
+      const studentId = dataFind[0].id;
+
+      const res = await fetch(`http://localhost:3000/students/${studentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, age: Number(form.age) }),
@@ -72,15 +86,15 @@ export default function EditStudent() {
       <h2>Edit Student</h2>
       <div>
         <label>
-          Student ID:
+          Registration Number:
           <input
-            type="number"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            type="text"
+            value={registrationNumber}
+            onChange={(e) => setRegistrationNumber(e.target.value)}
             style={{ marginLeft: 10 }}
           />
         </label>
-        <button type="button" onClick={handleIdSearch} style={{ marginLeft: 10 }}>
+        <button type="button" onClick={handleRegSearch} style={{ marginLeft: 10 }}>
           Load Student
         </button>
       </div>
