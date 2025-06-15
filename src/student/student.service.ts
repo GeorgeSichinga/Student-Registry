@@ -35,4 +35,10 @@ export class StudentService {
     await this.studentRepository.remove(student);
     return { deleted: true };
   }
+
+  async findByRegistrationNumber(registrationNumber: string) {
+    return this.studentRepository.find({
+      where: { registrationNumber },
+    });
+  }
 }

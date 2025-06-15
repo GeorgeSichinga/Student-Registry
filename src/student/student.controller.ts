@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { Student } from './student.entity';
 
@@ -12,7 +12,10 @@ export class StudentController {
   }
 
   @Get()
-  findAll() {
+  async findAll(@Query('registrationNumber') registrationNumber?: string) {
+    if (registrationNumber) {
+      return this.studentService.findByRegistrationNumber(registrationNumber);
+    }
     return this.studentService.findAll();
   }
 
